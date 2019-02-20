@@ -1,6 +1,7 @@
 package comwuxuemeieverything.core.dao;
 
 import com.alibaba.druid.pool.DruidDataSource;
+import org.apache.commons.io.IOUtils;
 
 import javax.sql.DataSource;
 import java.io.File;
@@ -11,6 +12,8 @@ import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.function.Predicate;
+
 public class DataSourceFactory {
 
     /**
@@ -41,11 +44,11 @@ public class DataSourceFactory {
                     //JDBC规范中关于H2 jdbc:h2:~/filepath ->存储到当前用户的home目录
                     //JDBC规范中关于H2 jdbc:h2://ip:port/databaseName ->存储到服务器
                     dataSource.setUrl("jdbc:h2:" + workDir + File.separator + "myeverything");//workDir获取当前工作目录
-                    //Druid的可配置参数
+                    //Druid数据库连接池的可配置参数
                     //第一种方式
-                    dataSource.setValidationQuery("select now()"); // 验证查询
+                    //dataSource.setValidationQuery("select now()"); // 验证查询
                     //第二种方式
-                    // dataSource.setTestWhileIdle(false);
+                     dataSource.setTestWhileIdle(false); //关闭数据源
                 }
             }
         }
@@ -85,5 +88,15 @@ public class DataSourceFactory {
         } catch (IOException | SQLException e) {
             e.printStackTrace();
     }
+    }
+    public static void main(String[]args){
+        //演示IO包读文件
+
+        try (InputStream in = DataSourceFactory.class.getClassLoader().getResourceAsStream("myeverything.sql");){
+            String sql= IOUtils.toString(in);
+            System.out.println(sql);
+        }catch(IOException e){
+
+        }
     }
 }

@@ -10,16 +10,16 @@ public interface FileScan {
     void index(String path);
     //遍历拦截器
     void interceptor(FileInterceptor interceptor);
-//    public static void main(String[] args) {
-//        DataSourceFactory.initDatabase();
-//        FileScan scan = new FileScanImpl();
-//        FileInterceptor printInterceptor = new FilePrintInterceptor();
-//        scan.interceptor(printInterceptor);
-//
-//        FileInterceptor fileIndexInterceptor = new FileIndexInterceptor(new FileIndexDaoImpl(DataSourceFactory.dataSource()));
-//        scan.interceptor(fileIndexInterceptor);
-//
-//        scan.index("D:\\test");
-//
-//    }
+    public static void main(String[] args) {
+        DataSourceFactory.initDatabase();
+        FileScan scan = new FileScanImpl();
+      FileInterceptor printInterceptor = new FilePrintInterceptor();
+        scan.interceptor(printInterceptor);
+
+     FileInterceptor fileIndexInterceptor = new FileIndexInterceptor(new FileIndexDaoImpl(DataSourceFactory.dataSource()));
+       scan.interceptor(fileIndexInterceptor);
+
+    scan.index("D:\\test");
+
+   }
 }

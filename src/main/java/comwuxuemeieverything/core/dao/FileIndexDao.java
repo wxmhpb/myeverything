@@ -2,7 +2,6 @@ package comwuxuemeieverything.core.dao;
 
 import comwuxuemeieverything.core.model.Condition;
 import comwuxuemeieverything.core.model.Thing;
-import comwuxuemeieverything.core.interceptor.impl.ThingClearInterceptor;
 import java.util.List;
 //业务层访问数据库的CRUD
 public interface FileIndexDao {

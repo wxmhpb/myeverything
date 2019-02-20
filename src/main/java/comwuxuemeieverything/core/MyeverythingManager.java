@@ -1,11 +1,11 @@
 package comwuxuemeieverything.core;
 import comwuxuemeieverything.config.MyeverythingConfig;
+import comwuxuemeieverything.core.common.HandlePath;
 import comwuxuemeieverything.core.index.FileScan;
 import comwuxuemeieverything.core.search.FileSearch;
 import comwuxuemeieverything.core.dao.DataSourceFactory;
 import comwuxuemeieverything.core.dao.FileIndexDao;
 import comwuxuemeieverything.core.dao.impl.FileIndexDaoImpl;
-import comwuxuemeieverything.core.index.FileScan;
 import comwuxuemeieverything.core.index.impl.FileScanImpl;
 import comwuxuemeieverything.core.interceptor.impl.FileIndexInterceptor;
 import comwuxuemeieverything.core.interceptor.impl.ThingClearInterceptor;
@@ -13,7 +13,6 @@ import comwuxuemeieverything.core.model.Condition;
 import comwuxuemeieverything.core.model.Thing;
 import comwuxuemeieverything.core.search.impl.FileSearchImpl;
 import javax.sql.DataSource;
-import java.awt.datatransfer.StringSelection;
 import java.io.File;
 import java.util.List;
 import java.util.Set;
@@ -24,10 +23,10 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
-import java.util.concurrent.ExecutorService;
-
+import comwuxuemeieverything.core.monitor.impl.FileWatchImpl;
+import comwuxuemeieverything.core.monitor.FileWatch;
 public class MyeverythingManager {
-    private static volatile MyeverythingManager manager;
+    private  static volatile MyeverythingManager  manager;
 
     private FileSearch fileSearch;
 
@@ -38,8 +37,11 @@ public class MyeverythingManager {
     private ThingClearInterceptor thingClearInterceptor;
     private Thread backgroundClearThread;//清理现场
     private AtomicBoolean backgroundClearThreadStatus = new AtomicBoolean(false);//原子性，初始值为false
+  //文件监控
+    private FileWatch fileWatch;
 
     private MyeverythingManager() {
+
         this.initComponent();//初始化构件
     }
 
@@ -49,7 +51,7 @@ public class MyeverythingManager {
 
         //检查数据库
         //第一次使用数据库时初始化
-        initOresetDatabase();
+        DataSourceFactory.initDatabase();
         //业务层对象
         FileIndexDao fileIndexDao = new FileIndexDaoImpl(dataSource);
 
@@ -62,13 +64,12 @@ public class MyeverythingManager {
         this.backgroundClearThread = new Thread(this.thingClearInterceptor);
         this.backgroundClearThread.setName("Thread-Thing-Clear");
         this.backgroundClearThread.setDaemon(true);
+
+        //文件监控对象
+       this.fileWatch=new FileWatchImpl(fileIndexDao);
     }
 
     //存在bug
-    private void initOresetDatabase() {
-            DataSourceFactory.initDatabase();
-        }
-
     //懒汉式单例模式，double check
     public static MyeverythingManager getInstance() {
         if (manager == null) {
@@ -100,7 +101,7 @@ public class MyeverythingManager {
 
     //索引
     public void buildIndex() {
-        initOresetDatabase();//重置时初始化
+        DataSourceFactory.initDatabase();//重置时初始化
         Set<String> directories = MyeverythingConfig.getInstance().getIncludePath();
         if (this.executorService == null) {
             this.executorService = Executors.newFixedThreadPool(directories.size(), new ThreadFactory() {
@@ -142,6 +143,20 @@ public class MyeverythingManager {
         } else {
             System.out.println("Cant repeat start BackgroundClearThread");
         }
+    }
+    public void startFileSystemMonitor(){
+        MyeverythingConfig config=MyeverythingConfig.getInstance();
+        HandlePath handlePath = new HandlePath();
+        handlePath.setIncludePath(config.getIncludePath());
+        handlePath.setExcludePath(config.getExcludePath());
+        this.fileWatch.monitor(handlePath);
+        new Thread (new Runnable(){
+            @Override
+            public void run(){
+                System.out.println("文件系统监控启动");
+                fileWatch.start();
+            }
+        }).start();
     }
 }
 

@@ -92,11 +92,15 @@ public class FileIndexDaoImpl implements  FileIndexDao {
                         .append("' ");
             }
             //limit, order必选的
+            if(condition.getOrderByAsc()!=null){ //空指针异常
             sqlBuilder.append(" order by depth ")
-                    .append(condition.getOrderByAsc() ? "asc" : "desc")
-                    .append(" limit ")
-                    .append(condition.getLimit())
-                    .append(" offset 0 ");//偏移量从0开始
+                    .append(condition.getOrderByAsc() ? "asc" : "desc");
+            }
+            if(condition.getLimit()!=null) {  //空指针异常
+                sqlBuilder.append(" limit ")
+                        .append(condition.getLimit())
+                        .append(" offset 0 ");//偏移量从0开始
+            }
 
 //            System.out.println(sqlBuilder.toString());
             //3.准备命令

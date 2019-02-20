@@ -18,6 +18,7 @@ public class ThingClearInterceptor implements ThingInterceptor,Runnable {
 
     @Override
     public void apply(Thing thing) {
+
         this.queue.add(thing);
     }
 

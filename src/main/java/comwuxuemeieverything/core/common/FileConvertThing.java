@@ -16,11 +16,8 @@ public final class FileConvertThing { //文件转换为Thing对象
     }
 
     private static int computeFileDepth(File file) { //计算深度
-        int dept = 0;
-
         String[] segments = file.getAbsolutePath().split("\\\\"); //以\\作为分隔符，  用\\进行转义
-        dept = segments.length;
-        return dept;
+        return segments.length;
     }
 
     private static FileType computeFileType(File file) { //文件类型
